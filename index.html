@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Code Genius Activities</title>
+  <title>Code Genius Activity Library</title>
   <style>
     :root {
       color-scheme: light;
@@ -14,6 +14,7 @@
       --panel: #ffffff;
       --green: #4c8f6f;
       --gold: #c4872e;
+      --blue: #476a9f;
     }
     * { box-sizing: border-box; }
     body {
@@ -24,7 +25,7 @@
       color: var(--ink);
     }
     main {
-      width: min(1040px, calc(100% - 32px));
+      width: min(1060px, calc(100% - 32px));
       margin: 0 auto;
       padding: 48px 0 56px;
     }
@@ -39,7 +40,7 @@
     }
     h1 {
       margin: 0 0 10px;
-      font-size: clamp(38px, 7vw, 76px);
+      font-size: clamp(36px, 7vw, 72px);
       line-height: 1;
       letter-spacing: 0;
     }
@@ -47,6 +48,32 @@
       margin: 0;
       color: var(--muted);
       line-height: 1.55;
+    }
+    .lead {
+      max-width: 780px;
+      font-size: 18px;
+    }
+    .thai {
+      color: var(--ink);
+      font-weight: 700;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 6px 10px;
+      border: 1.5px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .7);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
     }
     .course {
       padding: 24px 0 30px;
@@ -65,6 +92,10 @@
       line-height: 1.08;
       letter-spacing: 0;
     }
+    .subtitle {
+      color: var(--blue);
+      font-weight: 800;
+    }
     .count {
       flex: 0 0 auto;
       color: var(--gold);
@@ -77,7 +108,7 @@
     }
     a {
       display: flex;
-      min-height: 172px;
+      min-height: 190px;
       flex-direction: column;
       justify-content: space-between;
       gap: 18px;
@@ -114,6 +145,13 @@
       line-height: 1.16;
       letter-spacing: 0;
     }
+    .label-th {
+      display: block;
+      margin-top: 4px;
+      color: var(--blue);
+      font-size: 15px;
+      font-weight: 800;
+    }
     .open {
       color: var(--green);
       font-weight: 800;
@@ -131,50 +169,55 @@
       .course-head { display: block; }
       .count { display: inline-block; margin-top: 10px; }
       .grid { grid-template-columns: 1fr; }
-      a { min-height: 145px; }
+      a { min-height: 165px; }
     }
   </style>
 </head>
 <body>
   <main>
     <header>
-      <p class="eyebrow">Code Genius Activities</p>
-      <h1>Classroom HTML Hub</h1>
-      <p>รวมกิจกรรม HTML ที่พร้อมเปิดใช้ แยกตามหลักสูตร</p>
+      <p class="eyebrow">Code Genius</p>
+      <h1>Activity Library</h1>
+      <p class="lead"><span class="thai">คลังกิจกรรมสำหรับเปิดใช้ในห้องเรียน</span><br>Classroom-ready HTML activities for Code Genius lessons, organized for ongoing updates.</p>
+      <div class="meta" aria-label="Library details">
+        <span class="pill">8 activities</span>
+        <span class="pill">2 lesson groups</span>
+        <span class="pill">Thai / English menu</span>
+      </div>
     </header>
 
     <section class="course" aria-labelledby="password-title">
       <div class="course-head">
         <div>
           <h2 id="password-title">Password Survivor</h2>
-          <p>กิจกรรมเรื่องรหัสผ่านและเกมเดารหัสในห้องเรียน</p>
+          <p><span class="subtitle">ความปลอดภัยของรหัสผ่าน</span><br>Password safety activities and a classroom code-breaking game.</p>
         </div>
-        <span class="count">3 files</span>
+        <span class="count">3 activities</span>
       </div>
       <div class="grid">
         <a href="password/00_Password_Playground_Intro.html">
           <span class="number">00</span>
           <span>
-            <h3>Password Playground - Intro</h3>
-            <p>บทนำและกิจกรรมทดลองเกี่ยวกับรหัสผ่าน</p>
+            <h3>Password Playground<span class="label-th">บทนำและกิจกรรมทดลองรหัสผ่าน</span></h3>
+            <p>Intro activity for exploring how passwords work.</p>
           </span>
-          <span class="open">Open</span>
+          <span class="open">Open / เปิด</span>
         </a>
         <a href="password/01_Password_Quiz_Slides.html">
           <span class="number">01</span>
           <span>
-            <h3>Password Survivor - สไลด์ถามตอบ</h3>
-            <p>สไลด์คำถามสำหรับนำกิจกรรมในชั้นเรียน</p>
+            <h3>Password Quiz Slides<span class="label-th">สไลด์ถามตอบ Password Survivor</span></h3>
+            <p>Question slides for leading the classroom discussion.</p>
           </span>
-          <span class="open">Open</span>
+          <span class="open">Open / เปิด</span>
         </a>
         <a href="password/02_Password_Survivor_Game.html">
           <span class="number">02</span>
           <span>
-            <h3>Password Survivor</h3>
-            <p>เกมเดารหัส 4 หลักแบบทีม</p>
+            <h3>Password Survivor Game<span class="label-th">เกมเดารหัส 4 หลักแบบทีม</span></h3>
+            <p>Team game for practicing password logic and strategy.</p>
           </span>
-          <span class="open">Open</span>
+          <span class="open">Open / เปิด</span>
         </a>
       </div>
     </section>
@@ -183,56 +226,56 @@
       <div class="course-head">
         <div>
           <h2 id="dictionary-title">Python Dictionary</h2>
-          <p>กิจกรรม dictionary, alien passport, และ quiz</p>
+          <p><span class="subtitle">กิจกรรม Dictionary และ Alien Passport</span><br>Dictionary practice, alien profiles, and quiz activities.</p>
         </div>
-        <span class="count">5 files</span>
+        <span class="count">5 activities</span>
       </div>
       <div class="grid">
         <a href="dictionary/Dictionary_Quiz.html">
           <span class="number">01</span>
           <span>
-            <h3>Dictionary Quiz</h3>
-            <p>Quiz รวมแนวคิด dictionary พร้อมภาพอธิบาย</p>
+            <h3>Dictionary Quiz<span class="label-th">แบบทดสอบแนวคิด Dictionary</span></h3>
+            <p>Visual quiz for reviewing key dictionary concepts.</p>
           </span>
-          <span class="open">Open</span>
+          <span class="open">Open / เปิด</span>
         </a>
         <a href="dictionary/Alien_Visitor_Randomizer.html">
           <span class="number">02</span>
           <span>
-            <h3>ด่านต้อนรับเอเลี่ยน</h3>
-            <p>สุ่ม visitor และข้อมูล passport สำหรับกิจกรรม</p>
+            <h3>Alien Visitor Randomizer<span class="label-th">ด่านต้อนรับเอเลี่ยน</span></h3>
+            <p>Random visitor cards for passport-based activities.</p>
           </span>
-          <span class="open">Open</span>
+          <span class="open">Open / เปิด</span>
         </a>
         <a href="dictionary/Alien_Dictionary_Lab.html">
           <span class="number">03</span>
           <span>
-            <h3>Alien Dictionary Lab</h3>
-            <p>ฝึกอ่านข้อมูล dictionary ทีละ passport</p>
+            <h3>Alien Dictionary Lab<span class="label-th">แล็บอ่านข้อมูลทีละ Passport</span></h3>
+            <p>Guided practice for reading structured data.</p>
           </span>
-          <span class="open">Open</span>
+          <span class="open">Open / เปิด</span>
         </a>
         <a href="dictionary/Alien_Passport_Class_1_Inner_Worlds.html">
           <span class="number">04</span>
           <span>
-            <h3>Alien Passport - Class 1</h3>
-            <p>Inner Worlds activity</p>
+            <h3>Alien Passport: Class 1<span class="label-th">Inner Worlds</span></h3>
+            <p>Passport data set for the first activity group.</p>
           </span>
-          <span class="open">Open</span>
+          <span class="open">Open / เปิด</span>
         </a>
         <a href="dictionary/Alien_Passport_Class_2_Outer_Worlds.html">
           <span class="number">05</span>
           <span>
-            <h3>Alien Passport - Class 2</h3>
-            <p>Outer Worlds activity</p>
+            <h3>Alien Passport: Class 2<span class="label-th">Outer Worlds</span></h3>
+            <p>Passport data set for the second activity group.</p>
           </span>
-          <span class="open">Open</span>
+          <span class="open">Open / เปิด</span>
         </a>
       </div>
     </section>
 
     <footer>
-      <p>Static hub for HTML files from the two selected Drive folders only.</p>
+      <p><span class="thai">อัปเดตได้เรื่อย ๆ โดยเพิ่มไฟล์ HTML และลิงก์ใหม่ในเมนูนี้</span><br>Maintained as a growing library of selected classroom HTML activities.</p>
     </footer>
   </main>
 </body>
