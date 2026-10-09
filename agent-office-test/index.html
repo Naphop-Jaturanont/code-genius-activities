@@ -732,6 +732,48 @@
       line-height: 1.5;
     }
 
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(18, 30, 42, 0.46);
+    }
+
+    .modal-backdrop[hidden] {
+      display: none;
+    }
+
+    .modal {
+      width: min(430px, 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 22px 60px rgba(20, 34, 48, 0.28);
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .modal h2 {
+      font-size: 1.12rem;
+      line-height: 1.25;
+    }
+
+    .modal p {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
     .sr-only {
       position: absolute;
       width: 1px;
@@ -895,6 +937,19 @@
     </section>
   </main>
 
+  <div class="modal-backdrop" id="resetDialog" role="dialog" aria-modal="true" aria-labelledby="resetDialogTitle" aria-describedby="resetDialogDescription" hidden>
+    <div class="modal">
+      <div>
+        <h2 id="resetDialogTitle">Reset fictional demo?</h2>
+        <p id="resetDialogDescription">This replaces the current page state with the bundled fictional demo snapshot. Imported snapshot text in this page will be cleared.</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="resetCancelButton">Cancel</button>
+        <button type="button" id="resetConfirmButton" class="danger">Reset Demo</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     "use strict";
 
@@ -965,6 +1020,10 @@
     const statusFilter = document.getElementById("statusFilter");
     const roleFilter = document.getElementById("roleFilter");
     const jsonInput = document.getElementById("jsonInput");
+    const resetDialog = document.getElementById("resetDialog");
+    const resetCancelButton = document.getElementById("resetCancelButton");
+    const resetConfirmButton = document.getElementById("resetConfirmButton");
+    let lastFocusedBeforeReset = null;
 
     function text(value, fallback = "Not provided") {
       if (value === null || value === undefined || value === "") return fallback;
@@ -1106,6 +1165,73 @@
     function setFeedback(message, kind = "") {
       feedback.textContent = message;
       feedback.className = `feedback ${kind}`.trim();
+    }
+
+    function focusElement(element) {
+      if (element && typeof element.focus === "function") element.focus();
+    }
+
+    function isResetDialogOpen() {
+      return !resetDialog.hidden;
+    }
+
+    function blockWhenModalOpen(event) {
+      if (!isResetDialogOpen()) return false;
+      if (event && typeof event.preventDefault === "function") event.preventDefault();
+      if (event && typeof event.stopPropagation === "function") event.stopPropagation();
+      return true;
+    }
+
+    function cancelResetDialog() {
+      closeResetDialog();
+      setFeedback("Reset cancelled. Current snapshot preserved.", "ok");
+    }
+
+    function openResetDialog() {
+      lastFocusedBeforeReset = document.activeElement;
+      app.inert = true;
+      app.setAttribute("aria-hidden", "true");
+      resetDialog.hidden = false;
+      focusElement(resetCancelButton);
+    }
+
+    function closeResetDialog() {
+      resetDialog.hidden = true;
+      app.inert = false;
+      app.removeAttribute("aria-hidden");
+      focusElement(lastFocusedBeforeReset || document.getElementById("resetButton"));
+      lastFocusedBeforeReset = null;
+    }
+
+    function handleResetDialogKeydown(event) {
+      if (!isResetDialogOpen()) return;
+      if (event.key === "Escape") {
+        if (typeof event.preventDefault === "function") event.preventDefault();
+        cancelResetDialog();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusables = [resetCancelButton, resetConfirmButton];
+      const currentIndex = focusables.indexOf(document.activeElement);
+      const fallbackIndex = event.shiftKey ? focusables.length - 1 : 0;
+      const nextIndex = currentIndex === -1
+        ? fallbackIndex
+        : (currentIndex + (event.shiftKey ? -1 : 1) + focusables.length) % focusables.length;
+      if (typeof event.preventDefault === "function") event.preventDefault();
+      focusElement(focusables[nextIndex]);
+    }
+
+    function applyDemoReset() {
+      state.snapshot = cloneSnapshot(demoSnapshot);
+      state.selectedRole = "coordinator";
+      state.statusFilter = "all";
+      state.roleFilter = "all";
+      statusFilter.value = "all";
+      roleFilter.value = "all";
+      jsonInput.value = "";
+      closeResetDialog();
+      render();
+      setFeedback("Fictional demo snapshot restored.", "ok");
     }
 
     function freshnessState(snapshot, nowMs = Date.now()) {
@@ -1303,6 +1429,7 @@
     }
 
     function selectRole(roleId) {
+      if (isResetDialogOpen()) return;
       state.selectedRole = roleId;
       render();
     }
@@ -1389,16 +1516,15 @@
     });
 
     document.getElementById("resetButton").addEventListener("click", () => {
-      if (!confirm("Reset to fictional demo snapshot? Imported snapshot data in this page will be replaced.")) return;
-      state.snapshot = cloneSnapshot(demoSnapshot);
-      state.selectedRole = "coordinator";
-      state.statusFilter = "all";
-      state.roleFilter = "all";
-      statusFilter.value = "all";
-      roleFilter.value = "all";
-      jsonInput.value = "";
-      render();
-      setFeedback("Fictional demo snapshot restored.", "ok");
+      openResetDialog();
+    });
+
+    resetCancelButton.addEventListener("click", () => {
+      cancelResetDialog();
+    });
+
+    resetConfirmButton.addEventListener("click", () => {
+      applyDemoReset();
     });
 
     document.getElementById("demoToggle").addEventListener("change", event => {
@@ -1421,16 +1547,22 @@
     });
 
     statusFilter.addEventListener("change", event => {
+      if (blockWhenModalOpen(event)) return;
       state.statusFilter = event.target.value;
       renderTaskTable();
     });
 
     roleFilter.addEventListener("change", event => {
+      if (blockWhenModalOpen(event)) return;
       state.roleFilter = event.target.value;
       renderTaskTable();
     });
 
     document.addEventListener("keydown", event => {
+      if (isResetDialogOpen()) {
+        handleResetDialogKeydown(event);
+        return;
+      }
       if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
       const target = event.target;
       if (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
