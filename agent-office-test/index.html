@@ -1,0 +1,1451 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Curriculum Team Office</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #15212e;
+      --muted: #617081;
+      --paper: #fbfaf6;
+      --panel: #ffffff;
+      --line: #d8dddf;
+      --floor: #d9efe6;
+      --floor-dark: #a9d4ca;
+      --blue: #2c7be5;
+      --green: #268b67;
+      --yellow: #b46f00;
+      --red: #c84444;
+      --violet: #7952b3;
+      --shadow: rgba(20, 34, 48, 0.14);
+      --focus: #0b66c3;
+      --radius: 8px;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(135deg, rgba(44, 123, 229, 0.08), transparent 34%),
+        linear-gradient(225deg, rgba(38, 139, 103, 0.10), transparent 38%),
+        var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button, .file-button {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 6px;
+      min-height: 38px;
+      padding: 0 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+    }
+
+    button:hover, .file-button:hover {
+      border-color: #9fb1bf;
+      box-shadow: 0 3px 12px var(--shadow);
+    }
+
+    button:active, .file-button:active { transform: translateY(1px); }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, .agent-card:focus-visible, .desk-button:focus-visible, .file-button:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--focus) 55%, transparent);
+      outline-offset: 2px;
+    }
+
+    .app {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
+      gap: 16px;
+    }
+
+    header {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: end;
+      padding: 10px 2px 2px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      font-size: clamp(1.45rem, 2.6vw, 2.3rem);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 8px;
+      max-width: 78ch;
+      line-height: 1.5;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .primary {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+
+    .danger {
+      color: #8d2020;
+      border-color: #e8b8b8;
+      background: #fffafa;
+    }
+
+    .panel {
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 30px rgba(20, 34, 48, 0.08);
+    }
+
+    .office-wrap {
+      min-height: 620px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .office-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      align-items: center;
+    }
+
+    .snapshot-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: #fff;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--muted);
+      display: inline-block;
+    }
+
+    .status-dot.active { background: var(--blue); }
+    .status-dot.blocked { background: var(--red); }
+    .status-dot.review { background: var(--violet); }
+    .status-dot.done { background: var(--green); }
+    .status-dot.unknown, .status-dot.stale { background: var(--yellow); }
+
+    .toggle-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .toggle-row label, .filter-row label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 36px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .scene-shell {
+      position: relative;
+      min-height: 560px;
+      padding: 22px 14px 18px;
+    }
+
+    .office-scene {
+      position: relative;
+      width: min(820px, 100%);
+      aspect-ratio: 1.32;
+      margin: 0 auto;
+      image-rendering: pixelated;
+      isolation: isolate;
+    }
+
+    .floor {
+      position: absolute;
+      inset: 10% 6% 12% 6%;
+      background:
+        linear-gradient(30deg, transparent 47%, rgba(255,255,255,0.42) 48% 52%, transparent 53%) 0 0 / 48px 48px,
+        linear-gradient(150deg, transparent 47%, rgba(83,130,118,0.20) 48% 52%, transparent 53%) 0 0 / 48px 48px,
+        var(--floor);
+      clip-path: polygon(50% 0, 100% 32%, 50% 100%, 0 32%);
+      border: 4px solid var(--floor-dark);
+      box-shadow: 0 28px 34px rgba(49, 84, 89, 0.18);
+    }
+
+    .wall {
+      position: absolute;
+      background: #eef4f1;
+      border: 4px solid #c1d5d0;
+      box-shadow: inset 0 -20px rgba(173, 207, 198, 0.28);
+      z-index: -1;
+    }
+
+    .wall.left {
+      inset: 9% 50% 56% 8%;
+      transform: skewY(27deg);
+      transform-origin: bottom right;
+    }
+
+    .wall.right {
+      inset: 9% 8% 56% 50%;
+      transform: skewY(-27deg);
+      transform-origin: bottom left;
+    }
+
+    .plant, .delivery-box {
+      position: absolute;
+      width: 42px;
+      height: 42px;
+      z-index: 4;
+      filter: drop-shadow(0 8px 0 rgba(45, 75, 70, 0.12));
+    }
+
+    .plant { left: 14%; top: 28%; }
+    .delivery-box { right: 13%; bottom: 25%; }
+
+    .plant::before {
+      content: "";
+      position: absolute;
+      inset: 16px 10px 0;
+      background: #b66d3c;
+      clip-path: polygon(15% 0, 85% 0, 70% 100%, 30% 100%);
+    }
+
+    .plant::after {
+      content: "";
+      position: absolute;
+      inset: 0 0 18px;
+      background:
+        linear-gradient(45deg, transparent 42%, #2e9b6e 43% 58%, transparent 59%),
+        linear-gradient(-45deg, transparent 42%, #257d61 43% 58%, transparent 59%);
+    }
+
+    .delivery-box::before {
+      content: "";
+      position: absolute;
+      inset: 8px 3px 4px;
+      background: #d98d43;
+      clip-path: polygon(50% 0, 100% 25%, 100% 72%, 50% 100%, 0 72%, 0 25%);
+    }
+
+    .delivery-box::after {
+      content: "ส่ง";
+      position: absolute;
+      inset: 13px 0 0;
+      text-align: center;
+      color: #5a2f12;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .desk-button {
+      --x: 50%;
+      --y: 50%;
+      --accent: var(--blue);
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      width: clamp(96px, 15vw, 128px);
+      height: clamp(116px, 18vw, 152px);
+      border: 0;
+      background: transparent;
+      padding: 0;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      cursor: pointer;
+    }
+
+    .desk-button.selected { z-index: 9; }
+
+    .desk-button .desk {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      bottom: 12%;
+      height: 42%;
+      background: linear-gradient(#d9a45e 0 48%, #ad703f 49%);
+      clip-path: polygon(50% 0, 100% 24%, 100% 72%, 50% 100%, 0 72%, 0 24%);
+      box-shadow: 0 10px 0 rgba(72, 54, 35, 0.18);
+    }
+
+    .desk-button .desk::before {
+      content: "";
+      position: absolute;
+      inset: 14% 16% 42%;
+      background: color-mix(in srgb, var(--accent) 62%, #fff);
+      clip-path: polygon(50% 0, 100% 28%, 50% 58%, 0 28%);
+    }
+
+    .desk-button .screen {
+      position: absolute;
+      left: 38%;
+      bottom: 54%;
+      width: 34%;
+      height: 24%;
+      background: #263746;
+      border: 4px solid #172531;
+      box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--accent) 42%, #e8f8ff);
+    }
+
+    .desk-button .person {
+      position: absolute;
+      left: 29%;
+      bottom: 48%;
+      width: 40%;
+      height: 38%;
+      animation: bob 1550ms ease-in-out infinite;
+      animation-delay: var(--delay, 0ms);
+    }
+
+    .desk-button.paused .person,
+    .reduced .desk-button .person,
+    .reduced .busy-rune,
+    .reduced .pipeline-step.active::after {
+      animation: none !important;
+    }
+
+    .hair, .head, .body, .arm, .leg {
+      position: absolute;
+      image-rendering: pixelated;
+    }
+
+    .head {
+      width: 34px;
+      height: 28px;
+      left: 12px;
+      top: 10px;
+      background: var(--skin, #c9875d);
+      box-shadow: inset 0 -4px rgba(120, 68, 44, 0.18);
+    }
+
+    .head::before, .head::after {
+      content: "";
+      position: absolute;
+      top: 11px;
+      width: 4px;
+      height: 4px;
+      background: #172531;
+    }
+
+    .head::before { left: 8px; }
+    .head::after { right: 8px; }
+
+    .hair {
+      width: 40px;
+      height: 16px;
+      left: 9px;
+      top: 4px;
+      background: var(--hair, #2e2c33);
+      clip-path: var(--hair-shape, polygon(0 30%, 20% 0, 88% 0, 100% 60%, 74% 52%, 52% 70%, 26% 54%, 0 70%));
+      z-index: 2;
+    }
+
+    .body {
+      width: 40px;
+      height: 30px;
+      left: 9px;
+      top: 37px;
+      background: var(--accent);
+      clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
+    }
+
+    .arm {
+      width: 12px;
+      height: 28px;
+      top: 40px;
+      background: var(--skin, #c9875d);
+    }
+
+    .arm.left { left: 0; transform: rotate(18deg); }
+    .arm.right { right: 0; transform: rotate(-18deg); }
+
+    .leg {
+      width: 12px;
+      height: 18px;
+      top: 65px;
+      background: #253346;
+    }
+
+    .leg.left { left: 16px; }
+    .leg.right { right: 16px; }
+
+    .busy-rune {
+      position: absolute;
+      right: 9%;
+      top: 8%;
+      min-width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      background: var(--accent);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 900;
+      box-shadow: 0 5px 0 rgba(20, 34, 48, 0.16);
+      animation: pulse 1100ms ease-in-out infinite;
+    }
+
+    .desk-button.done .busy-rune { background: var(--green); animation: none; }
+    .desk-button.blocked .busy-rune { background: var(--red); }
+    .desk-button.review .busy-rune { background: var(--violet); }
+    .desk-button.unknown .busy-rune, .desk-button.stale .busy-rune { background: var(--yellow); color: #392707; }
+
+    .tiny-label {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      background: #fff;
+      border: 2px solid color-mix(in srgb, var(--accent) 58%, #fff);
+      box-shadow: 0 3px 0 rgba(20, 34, 48, 0.12);
+      padding: 2px 5px;
+      color: #172531;
+      font-size: clamp(10px, 1.6vw, 12px);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .desk-button.selected .tiny-label {
+      border-color: var(--ink);
+      background: #fff7d5;
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .detail, .process, .task-alt, .io-panel {
+      padding: 16px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .section-head h2, .section-head h3 {
+      font-size: 1.05rem;
+      line-height: 1.25;
+    }
+
+    .section-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+      margin-top: 3px;
+    }
+
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .agent-card {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      padding: 10px;
+      text-align: left;
+      min-height: 84px;
+      display: grid;
+      gap: 5px;
+      align-content: start;
+    }
+
+    .agent-card.selected {
+      border-color: var(--ink);
+      box-shadow: inset 4px 0 var(--blue), 0 5px 16px rgba(20, 34, 48, 0.08);
+    }
+
+    .agent-card strong {
+      display: block;
+      font-size: 0.95rem;
+    }
+
+    .agent-card span {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.35;
+    }
+
+    .detail-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .role-chip {
+      background: #edf5ff;
+      color: #164a82;
+      border-color: #bad8f6;
+    }
+
+    .detail-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .info-row {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      line-height: 1.45;
+    }
+
+    .info-row dt {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .info-row dd { margin: 0; }
+
+    .task-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .task-item {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      padding: 10px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .task-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .task-top strong { line-height: 1.35; }
+
+    .task-meta {
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.4;
+    }
+
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(72px, 1fr));
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .pipeline-step {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      padding: 10px 8px;
+      min-height: 76px;
+      display: grid;
+      align-content: space-between;
+      gap: 8px;
+    }
+
+    .pipeline-step.active {
+      border-color: color-mix(in srgb, var(--blue) 58%, #fff);
+      box-shadow: inset 0 4px var(--blue);
+    }
+
+    .pipeline-step.active::after {
+      content: "";
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 8px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--blue), #fff, var(--blue));
+      animation: scan 1250ms linear infinite;
+    }
+
+    @keyframes scan {
+      from { transform: translateX(-12%); opacity: 0.55; }
+      to { transform: translateX(12%); opacity: 1; }
+    }
+
+    .pipeline-step strong {
+      font-size: 0.82rem;
+      line-height: 1.25;
+    }
+
+    .pipeline-step span {
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.25;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 10px 0 12px;
+    }
+
+    select {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      padding: 0 32px 0 10px;
+      color: var(--ink);
+    }
+
+    .task-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 7px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+
+    .task-table th, .task-table td {
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      line-height: 1.4;
+      font-size: 0.9rem;
+    }
+
+    .task-table th {
+      color: var(--muted);
+      background: #f4f7f8;
+      font-size: 0.8rem;
+    }
+
+    .task-table tr:last-child td { border-bottom: 0; }
+
+    .io-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px;
+      background: #fff;
+      color: var(--ink);
+      line-height: 1.45;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.86rem;
+    }
+
+    .feedback {
+      min-height: 22px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .feedback.error { color: #a02727; }
+    .feedback.ok { color: #236a50; }
+
+    .empty {
+      border: 1px dashed #b8c2c8;
+      border-radius: 7px;
+      padding: 14px;
+      background: #fbfcfc;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    input[type="file"] {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+    }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      header { grid-template-columns: 1fr; }
+      .top-actions, .toggle-row { justify-content: flex-start; }
+      .office-wrap { min-height: auto; }
+      .scene-shell { min-height: 460px; padding-inline: 6px; }
+      .office-scene { width: min(680px, 100%); }
+    }
+
+    @media (max-width: 640px) {
+      .app { padding: 10px; gap: 10px; }
+      .panel { border-radius: 7px; }
+      .office-toolbar { grid-template-columns: 1fr; }
+      .scene-shell { min-height: 390px; padding-top: 12px; }
+      .office-scene { aspect-ratio: 0.95; }
+      .desk-button { width: 92px; height: 112px; }
+      .desk-button[data-role="coordinator"] { --x: 50% !important; --y: 24% !important; }
+      .desk-button[data-role="curriculum-designer"] { --x: 31% !important; --y: 39% !important; }
+      .desk-button[data-role="document-designer"] { --x: 68% !important; --y: 39% !important; }
+      .desk-button[data-role="interactive-developer"] { --x: 31% !important; --y: 58% !important; }
+      .desk-button[data-role="independent-reviewer"] { --x: 68% !important; --y: 58% !important; }
+      .desk-button[data-role="release-manager"] { --x: 50% !important; --y: 76% !important; }
+      .wall.left, .wall.right { bottom: 65%; }
+      .agent-grid { grid-template-columns: 1fr; }
+      .info-row { grid-template-columns: 1fr; gap: 2px; }
+      .task-table { display: block; overflow-x: auto; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="app">
+    <header>
+      <div>
+        <h1>ห้องทำงานพิกเซลของทีม AI Curriculum</h1>
+        <p class="subtitle">มุมมองแบบ snapshot สำหรับติดตามบทบาท งาน หลักฐาน และ blocker ของทีมหลักสูตร AI โดย Demo mode ใช้ข้อมูลงานสมมติเท่านั้น และโหมด snapshot จริงจะแสดงแหล่งที่มา เวลา และสถานะ stale/unknown อย่างชัดเจน</p>
+      </div>
+      <div class="top-actions" aria-label="Main actions">
+        <button type="button" id="exportButton" title="Export current snapshot JSON">Export JSON</button>
+        <label class="file-button" for="fileInput" tabindex="0" title="Import a local JSON snapshot">Import JSON</label>
+        <input id="fileInput" type="file" accept="application/json,.json">
+        <button type="button" id="resetButton" class="danger" title="Reset fictional demo data">Reset Demo</button>
+      </div>
+    </header>
+
+    <section class="panel office-wrap" aria-labelledby="officeTitle">
+      <div class="office-toolbar">
+        <div>
+          <h2 id="officeTitle" class="sr-only">Isometric office scene</h2>
+          <div class="snapshot-meta" id="snapshotMeta"></div>
+        </div>
+        <div class="toggle-row">
+          <label><input type="checkbox" id="demoToggle" checked> Demo data</label>
+          <label><input type="checkbox" id="motionToggle" checked> Animations</label>
+        </div>
+      </div>
+      <div class="scene-shell" id="sceneShell">
+        <div class="office-scene" id="officeScene" aria-label="Pixel-art office with six selectable team roles">
+          <div class="wall left" aria-hidden="true"></div>
+          <div class="wall right" aria-hidden="true"></div>
+          <div class="floor" aria-hidden="true"></div>
+          <div class="plant" aria-hidden="true"></div>
+          <div class="delivery-box" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <section class="panel detail" aria-labelledby="detailTitle">
+        <div class="section-head">
+          <div>
+            <h2 id="detailTitle">รายละเอียดบทบาท</h2>
+            <p class="section-note">เลือกตัวละครในห้องหรือการ์ดด้านล่างเพื่อดูงานที่รับผิดชอบ</p>
+          </div>
+        </div>
+        <div class="agent-grid" id="agentGrid" role="list"></div>
+        <div id="agentDetail" class="detail-list" aria-live="polite"></div>
+      </section>
+
+      <section class="panel process" aria-labelledby="processTitle">
+        <div class="section-head">
+          <div>
+            <h2 id="processTitle">Process board</h2>
+            <p class="section-note">brief → design → build → review → fix → recheck → release → delivery</p>
+          </div>
+        </div>
+        <div class="pipeline" id="pipeline"></div>
+      </section>
+    </aside>
+
+    <section class="panel task-alt" aria-labelledby="taskAltTitle">
+      <div class="section-head">
+        <div>
+          <h2 id="taskAltTitle">Accessible task list</h2>
+          <p class="section-note">รายการนี้เป็นทางเลือกข้อความสำหรับฉากพิกเซลและรองรับ keyboard navigation</p>
+        </div>
+      </div>
+      <div class="filter-row">
+        <label for="statusFilter">Status
+          <select id="statusFilter">
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="review">Review</option>
+            <option value="blocked">Blocked</option>
+            <option value="done">Done</option>
+            <option value="stale">Stale</option>
+            <option value="unknown">Unknown</option>
+          </select>
+        </label>
+        <label for="roleFilter">Role
+          <select id="roleFilter">
+            <option value="all">All roles</option>
+          </select>
+        </label>
+      </div>
+      <div id="taskTableWrap"></div>
+    </section>
+
+    <section class="panel io-panel" aria-labelledby="ioTitle">
+      <div class="section-head">
+        <div>
+          <h2 id="ioTitle">Snapshot import/export</h2>
+          <p class="section-note">วาง JSON snapshot ที่ผ่านการตรวจสอบแล้ว หรือใช้ไฟล์ local JSON ข้อมูล import จะถูกแสดงเป็นข้อความเท่านั้น</p>
+        </div>
+      </div>
+      <div class="io-grid">
+        <textarea id="jsonInput" spellcheck="false" aria-label="Snapshot JSON input"></textarea>
+        <div class="top-actions" style="justify-content:flex-start">
+          <button type="button" id="loadTextButton" class="primary">Load Snapshot</button>
+          <button type="button" id="copyButton">Copy Current JSON</button>
+        </div>
+        <p class="feedback" id="feedback" role="status"></p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    "use strict";
+
+    const stages = ["brief", "design", "build", "review", "fix", "recheck", "release", "delivery"];
+    const roleDefs = [
+      { id: "coordinator", label: "ผู้ประสานงาน", english: "Coordinator", x: "50%", y: "22%", accent: "#2c7be5", skin: "#c9875d", hair: "#1f2a3a", hairShape: "polygon(0 40%, 18% 8%, 75% 0, 100% 42%, 86% 70%, 57% 52%, 24% 76%, 0 72%)" },
+      { id: "curriculum-designer", label: "นักออกแบบหลักสูตร", english: "Curriculum designer", x: "29%", y: "40%", accent: "#268b67", skin: "#9f6747", hair: "#4b2d21", hairShape: "polygon(4% 28%, 28% 0, 72% 0, 96% 28%, 92% 76%, 62% 58%, 36% 76%, 8% 62%)" },
+      { id: "document-designer", label: "นักออกแบบเอกสาร", english: "Document designer", x: "70%", y: "40%", accent: "#d06a3a", skin: "#d69a73", hair: "#533422", hairShape: "polygon(0 28%, 46% 0, 100% 24%, 92% 64%, 60% 48%, 34% 72%, 10% 58%)" },
+      { id: "interactive-developer", label: "นักพัฒนาอินเทอร์แอคทีฟ", english: "Interactive developer", x: "31%", y: "64%", accent: "#7952b3", skin: "#b77b57", hair: "#24222c", hairShape: "polygon(0 58%, 12% 12%, 48% 0, 92% 18%, 100% 62%, 70% 48%, 50% 72%, 22% 52%)" },
+      { id: "independent-reviewer", label: "ผู้รีวิวอิสระ", english: "Independent reviewer", x: "68%", y: "64%", accent: "#607080", skin: "#c88b63", hair: "#d8d8d8", hairShape: "polygon(0 36%, 16% 2%, 86% 0, 100% 40%, 82% 68%, 50% 54%, 18% 72%)" },
+      { id: "release-manager", label: "ผู้จัดการส่งมอบ", english: "Release manager", x: "50%", y: "78%", accent: "#b46f00", skin: "#8f5f45", hair: "#222831", hairShape: "polygon(0 34%, 32% 0, 84% 8%, 100% 52%, 72% 60%, 48% 42%, 18% 68%)" }
+    ];
+
+    const demoSnapshot = {
+      schemaVersion: 1,
+      mode: "demo",
+      source: "Fictional demo snapshot bundled with artifact",
+      timestamp: "2026-10-09T00:00:00.000Z",
+      note: "งานทั้งหมดใน Demo mode เป็นข้อมูลสมมติสำหรับทดสอบ UI",
+      agents: [
+        { role: "coordinator", stage: "brief", status: "active", evidence: "Brief checklist drafted for stakeholder review", blockers: "Waiting for final lesson scope", tasks: [
+          { title: "รวบรวม brief รายสัปดาห์", stage: "brief", status: "active", evidence: "Fictional kickoff checklist", blockers: "Need scope confirmation" },
+          { title: "จัดลำดับคิวงานทีม", stage: "design", status: "active", evidence: "Fictional Kanban labels", blockers: "" }
+        ] },
+        { role: "curriculum-designer", stage: "design", status: "active", evidence: "Learning objective matrix ready for review", blockers: "", tasks: [
+          { title: "ออกแบบ learning outcomes", stage: "design", status: "active", evidence: "Fictional outcomes table", blockers: "" },
+          { title: "จับคู่กิจกรรมกับ Bloom level", stage: "design", status: "done", evidence: "Fictional rubric notes", blockers: "" }
+        ] },
+        { role: "document-designer", stage: "build", status: "active", evidence: "Worksheet layout pass in progress", blockers: "", tasks: [
+          { title: "จัดหน้าใบงานภาษาไทย", stage: "build", status: "active", evidence: "Fictional layout checklist", blockers: "" },
+          { title: "ตรวจ hierarchy ของหัวข้อ", stage: "review", status: "review", evidence: "Fictional typography review", blockers: "" }
+        ] },
+        { role: "interactive-developer", stage: "fix", status: "blocked", evidence: "Prototype controls pass keyboard smoke test", blockers: "Needs final asset dimensions", tasks: [
+          { title: "สร้าง activity prototype", stage: "build", status: "active", evidence: "Fictional interaction notes", blockers: "" },
+          { title: "แก้ responsive layout", stage: "fix", status: "blocked", evidence: "Fictional viewport note", blockers: "Need final copy length" }
+        ] },
+        { role: "independent-reviewer", stage: "review", status: "review", evidence: "Review checklist open", blockers: "Awaiting candidate package", tasks: [
+          { title: "รีวิวความถูกต้องเชิงหลักสูตร", stage: "review", status: "review", evidence: "Fictional review checklist", blockers: "Needs candidate package" },
+          { title: "ตรวจ accessibility", stage: "recheck", status: "unknown", evidence: "No real audit connected", blockers: "Browser QA not available in snapshot" }
+        ] },
+        { role: "release-manager", stage: "release", status: "stale", evidence: "Delivery checklist template exists", blockers: "No approved review yet", tasks: [
+          { title: "เตรียม release notes", stage: "release", status: "stale", evidence: "Fictional release note draft", blockers: "Independent review required" },
+          { title: "ตรวจ package ก่อนส่งมอบ", stage: "delivery", status: "unknown", evidence: "No verified delivery event", blockers: "Waiting for approval" }
+        ] }
+      ]
+    };
+
+    const state = {
+      snapshot: cloneSnapshot(demoSnapshot),
+      selectedRole: "coordinator",
+      statusFilter: "all",
+      roleFilter: "all",
+      animationEnabled: true
+    };
+
+    function cloneSnapshot(snapshot) {
+      return JSON.parse(JSON.stringify(snapshot));
+    }
+
+    const app = document.getElementById("app");
+    const officeScene = document.getElementById("officeScene");
+    const snapshotMeta = document.getElementById("snapshotMeta");
+    const agentGrid = document.getElementById("agentGrid");
+    const agentDetail = document.getElementById("agentDetail");
+    const pipeline = document.getElementById("pipeline");
+    const taskTableWrap = document.getElementById("taskTableWrap");
+    const feedback = document.getElementById("feedback");
+    const statusFilter = document.getElementById("statusFilter");
+    const roleFilter = document.getElementById("roleFilter");
+    const jsonInput = document.getElementById("jsonInput");
+
+    function text(value, fallback = "Not provided") {
+      if (value === null || value === undefined || value === "") return fallback;
+      return String(value);
+    }
+
+    const limits = {
+      jsonBytes: 100 * 1024,
+      agents: roleDefs.length,
+      tasksPerAgent: 20,
+      source: 300,
+      note: 500,
+      evidence: 600,
+      blockers: 600,
+      taskTitle: 180,
+      taskId: 80,
+      clockSkewMs: 5 * 60 * 1000
+    };
+
+    function utf8Bytes(value) {
+      return new Blob([String(value)]).size;
+    }
+
+    function assertLength(name, value, max) {
+      const next = text(value, "");
+      if (next.length > max) throw new Error(`${name} must be ${max} characters or fewer.`);
+      return next;
+    }
+
+    function getRole(id) {
+      return roleDefs.find(role => role.id === id) || roleDefs[0];
+    }
+
+    function getAgent(roleId) {
+      const found = state.snapshot.agents.find(agent => agent.role === roleId);
+      return normalizeAgent(found || { role: roleId, status: "unknown", stage: "brief", tasks: [] });
+    }
+
+    function normalizeStatus(status, fieldName = "status") {
+      const allowed = new Set(["active", "review", "blocked", "done", "stale", "unknown"]);
+      if (!allowed.has(status)) throw new Error(`${fieldName} must be one of: ${Array.from(allowed).join(", ")}.`);
+      return status;
+    }
+
+    function normalizeStage(stage, fieldName = "stage") {
+      if (!stages.includes(stage)) throw new Error(`${fieldName} must be one of: ${stages.join(", ")}.`);
+      return stage;
+    }
+
+    function normalizeAgent(agent) {
+      if (!agent || typeof agent !== "object" || Array.isArray(agent)) throw new Error("Each agent must be an object.");
+      if (!roleDefs.some(role => role.id === agent.role)) throw new Error(`Unknown role: ${text(agent.role, "(missing)")}.`);
+      if (!Array.isArray(agent.tasks)) throw new Error(`Agent ${agent.role} must include a tasks array.`);
+      if (agent.tasks.length > limits.tasksPerAgent) throw new Error(`Agent ${agent.role} has too many tasks; maximum is ${limits.tasksPerAgent}.`);
+      const taskIds = new Set();
+      const tasks = agent.tasks.map((task, index) => normalizeTask(task, agent.role, index, taskIds));
+      return {
+        role: agent.role,
+        stage: normalizeStage(agent.stage, `Agent ${agent.role} stage`),
+        status: normalizeStatus(agent.status, `Agent ${agent.role} status`),
+        evidence: assertLength(`Agent ${agent.role} evidence`, agent.evidence || "No evidence recorded", limits.evidence),
+        blockers: assertLength(`Agent ${agent.role} blockers`, agent.blockers || "No blockers recorded", limits.blockers),
+        tasks
+      };
+    }
+
+    function normalizeTask(task, roleId, index, taskIds) {
+      if (!task || typeof task !== "object" || Array.isArray(task)) throw new Error(`Task ${index + 1} for ${roleId} must be an object.`);
+      const id = task.id === undefined || task.id === null || task.id === "" ? `${roleId}-${index + 1}` : assertLength(`Task id for ${roleId}`, task.id, limits.taskId);
+      if (taskIds.has(id)) throw new Error(`Duplicate task id for ${roleId}: ${id}.`);
+      taskIds.add(id);
+      return {
+        id,
+        title: assertLength(`Task title for ${roleId}`, task.title || "Untitled task", limits.taskTitle),
+        stage: normalizeStage(task.stage, `Task ${id} stage`),
+        status: normalizeStatus(task.status, `Task ${id} status`),
+        evidence: assertLength(`Task ${id} evidence`, task.evidence || "No evidence recorded", limits.evidence),
+        blockers: assertLength(`Task ${id} blockers`, task.blockers || "No blockers recorded", limits.blockers)
+      };
+    }
+
+    function validateSnapshot(raw) {
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+        throw new Error("Snapshot must be a JSON object.");
+      }
+      if (!Array.isArray(raw.agents)) {
+        throw new Error("Snapshot must include an agents array.");
+      }
+      if (raw.agents.length > limits.agents) {
+        throw new Error(`Snapshot has too many agents; maximum is ${limits.agents}.`);
+      }
+      const roles = new Set(roleDefs.map(role => role.id));
+      const seenRoles = new Set();
+      const cleanAgents = raw.agents.map(agent => {
+        if (!agent || typeof agent !== "object" || Array.isArray(agent)) throw new Error("Each agent must be an object.");
+        if (!roles.has(agent.role)) throw new Error(`Unknown role: ${text(agent.role, "(missing)")}.`);
+        if (seenRoles.has(agent.role)) throw new Error(`Duplicate role id: ${agent.role}.`);
+        seenRoles.add(agent.role);
+        return normalizeAgent(agent);
+      });
+      if (cleanAgents.length === 0) {
+        throw new Error("Snapshot must include at least one recognized role.");
+      }
+      const parsedTime = Date.parse(raw.timestamp);
+      const hasKnownTimestamp = typeof raw.timestamp === "string" && raw.timestamp.trim() !== "" && !Number.isNaN(parsedTime);
+      return {
+        schemaVersion: Number(raw.schemaVersion) || 1,
+        mode: raw.mode === "real" ? "real" : "demo",
+        source: assertLength("Snapshot source", raw.source || "Unknown source", limits.source),
+        timestamp: hasKnownTimestamp ? new Date(parsedTime).toISOString() : null,
+        timestampUnknown: !hasKnownTimestamp,
+        note: assertLength("Snapshot note", raw.note || (raw.mode === "real" ? "Imported local snapshot" : "Fictional demo snapshot"), limits.note),
+        agents: cleanAgents
+      };
+    }
+
+    function statusLabel(status) {
+      return {
+        active: "Active",
+        review: "Review",
+        blocked: "Blocked",
+        done: "Done",
+        stale: "Stale",
+        unknown: "Unknown"
+      }[status] || "Unknown";
+    }
+
+    function statusSymbol(status) {
+      return {
+        active: "…",
+        review: "?",
+        blocked: "!",
+        done: "✓",
+        stale: "~",
+        unknown: "?"
+      }[status] || "?";
+    }
+
+    function setFeedback(message, kind = "") {
+      feedback.textContent = message;
+      feedback.className = `feedback ${kind}`.trim();
+    }
+
+    function freshnessState(snapshot, nowMs = Date.now()) {
+      if (snapshot.mode !== "real") return { label: "Demo timestamp visible", status: "unknown" };
+      if (snapshot.timestampUnknown || !snapshot.timestamp) return { label: "Stale/unknown freshness", status: "stale" };
+      const ageMs = nowMs - Date.parse(snapshot.timestamp);
+      if (Number.isNaN(ageMs)) return { label: "Stale/unknown freshness", status: "stale" };
+      if (ageMs < -limits.clockSkewMs) return { label: "Future/unknown freshness", status: "stale" };
+      if (ageMs > 24 * 60 * 60 * 1000) return { label: "Stale/unknown freshness", status: "stale" };
+      return { label: "Timestamp freshness visible", status: "done" };
+    }
+
+    function renderMeta() {
+      const timestampUnknown = state.snapshot.timestampUnknown || !state.snapshot.timestamp;
+      const freshness = freshnessState(state.snapshot);
+      const modeLabel = state.snapshot.mode === "real" ? "Real snapshot" : "Demo: fictional tasks";
+      snapshotMeta.replaceChildren(
+        pill(modeLabel, state.snapshot.mode === "real" ? "active" : "unknown"),
+        pill(`Source: ${text(state.snapshot.source)}`),
+        pill(timestampUnknown ? "Timestamp: unknown" : `Timestamp: ${new Date(state.snapshot.timestamp).toLocaleString()}`),
+        pill(freshness.label, freshness.status)
+      );
+      document.getElementById("demoToggle").checked = state.snapshot.mode !== "real";
+    }
+
+    function pill(label, status = "") {
+      const item = document.createElement("span");
+      item.className = "pill";
+      const dot = document.createElement("span");
+      dot.className = `status-dot ${status}`;
+      dot.setAttribute("aria-hidden", "true");
+      item.append(dot, document.createTextNode(label));
+      return item;
+    }
+
+    function renderScene() {
+      officeScene.querySelectorAll(".desk-button").forEach(node => node.remove());
+      for (const role of roleDefs) {
+        const agent = getAgent(role.id);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `desk-button ${agent.status} ${state.selectedRole === role.id ? "selected" : ""} ${state.animationEnabled ? "" : "paused"}`;
+        button.dataset.role = role.id;
+        button.style.setProperty("--x", role.x);
+        button.style.setProperty("--y", role.y);
+        button.style.setProperty("--accent", role.accent);
+        button.style.setProperty("--skin", role.skin);
+        button.style.setProperty("--hair", role.hair);
+        button.style.setProperty("--hair-shape", role.hairShape);
+        button.style.setProperty("--delay", `${roleDefs.indexOf(role) * 120}ms`);
+        button.setAttribute("aria-label", `${role.label}, ${role.english}, ${statusLabel(agent.status)}, stage ${agent.stage}`);
+        button.innerHTML = `
+          <span class="desk" aria-hidden="true"></span>
+          <span class="screen" aria-hidden="true"></span>
+          <span class="person" aria-hidden="true">
+            <span class="hair"></span><span class="head"></span><span class="body"></span>
+            <span class="arm left"></span><span class="arm right"></span>
+            <span class="leg left"></span><span class="leg right"></span>
+          </span>
+          <span class="busy-rune" aria-hidden="true">${statusSymbol(agent.status)}</span>
+          <span class="tiny-label">${role.label}</span>
+        `;
+        button.addEventListener("click", () => selectRole(role.id));
+        officeScene.append(button);
+      }
+    }
+
+    function renderAgentGrid() {
+      agentGrid.replaceChildren();
+      for (const role of roleDefs) {
+        const agent = getAgent(role.id);
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = `agent-card ${state.selectedRole === role.id ? "selected" : ""}`;
+        card.setAttribute("role", "listitem");
+        card.innerHTML = `
+          <strong>${role.label}</strong>
+          <span>${role.english}</span>
+          <span><span class="status-dot ${agent.status}" aria-hidden="true"></span> ${statusLabel(agent.status)} · ${agent.stage}</span>
+        `;
+        card.addEventListener("click", () => selectRole(role.id));
+        agentGrid.append(card);
+      }
+    }
+
+    function renderDetail() {
+      const role = getRole(state.selectedRole);
+      const agent = getAgent(state.selectedRole);
+      const title = document.createElement("div");
+      title.className = "detail-title";
+      title.innerHTML = `<h3>${role.label}</h3><span class="pill role-chip">${role.english}</span><span class="pill"><span class="status-dot ${agent.status}" aria-hidden="true"></span>${statusLabel(agent.status)}</span>`;
+
+      const dl = document.createElement("dl");
+      dl.className = "detail-list";
+      dl.innerHTML = `
+        <div class="info-row"><dt>Stage</dt><dd>${agent.stage}</dd></div>
+        <div class="info-row"><dt>Evidence</dt><dd></dd></div>
+        <div class="info-row"><dt>Blockers</dt><dd></dd></div>
+        <div class="info-row"><dt>Tasks</dt><dd></dd></div>
+      `;
+      dl.querySelectorAll("dd")[1].textContent = agent.evidence;
+      dl.querySelectorAll("dd")[2].textContent = agent.blockers;
+      const taskHost = dl.querySelectorAll("dd")[3];
+      if (agent.tasks.length === 0) {
+        taskHost.append(empty("No tasks recorded for this role in the current snapshot."));
+      } else {
+        const list = document.createElement("ul");
+        list.className = "task-list";
+        for (const task of agent.tasks) {
+          const item = document.createElement("li");
+          item.className = "task-item";
+          const top = document.createElement("div");
+          top.className = "task-top";
+          const name = document.createElement("strong");
+          name.textContent = task.title;
+          top.append(name, pill(statusLabel(task.status), task.status));
+          const meta = document.createElement("div");
+          meta.className = "task-meta";
+          meta.textContent = `${task.stage} · Evidence: ${task.evidence} · Blockers: ${task.blockers}`;
+          item.append(top, meta);
+          list.append(item);
+        }
+        taskHost.append(list);
+      }
+      agentDetail.replaceChildren(title, dl);
+    }
+
+    function renderPipeline() {
+      const counts = Object.fromEntries(stages.map(stage => [stage, 0]));
+      for (const agent of state.snapshot.agents.map(normalizeAgent)) {
+        counts[agent.stage] += 1;
+        for (const task of agent.tasks) counts[task.stage] += 1;
+      }
+      pipeline.replaceChildren();
+      for (const stage of stages) {
+        const active = getAgent(state.selectedRole).stage === stage;
+        const step = document.createElement("div");
+        step.className = `pipeline-step ${active ? "active" : ""}`;
+        step.innerHTML = `<strong>${stage}</strong><span>${counts[stage]} item${counts[stage] === 1 ? "" : "s"}</span>`;
+        pipeline.append(step);
+      }
+    }
+
+    function renderRoleFilter() {
+      const current = roleFilter.value || "all";
+      roleFilter.replaceChildren(new Option("All roles", "all"));
+      for (const role of roleDefs) roleFilter.append(new Option(role.label, role.id));
+      roleFilter.value = [...roleFilter.options].some(option => option.value === current) ? current : "all";
+    }
+
+    function collectRows() {
+      const rows = [];
+      for (const agent of state.snapshot.agents.map(normalizeAgent)) {
+        const role = getRole(agent.role);
+        if (agent.tasks.length === 0) {
+          rows.push({ role, title: "No task recorded", stage: agent.stage, status: agent.status, evidence: agent.evidence, blockers: agent.blockers });
+        } else {
+          for (const task of agent.tasks) rows.push({ role, ...task });
+        }
+      }
+      return rows.filter(row =>
+        (state.statusFilter === "all" || row.status === state.statusFilter) &&
+        (state.roleFilter === "all" || row.role.id === state.roleFilter)
+      );
+    }
+
+    function renderTaskTable() {
+      const rows = collectRows();
+      if (rows.length === 0) {
+        taskTableWrap.replaceChildren(empty("No tasks match the selected filters. Try All status or All roles."));
+        return;
+      }
+      const table = document.createElement("table");
+      table.className = "task-table";
+      table.innerHTML = "<thead><tr><th>Role</th><th>Task</th><th>Stage</th><th>Status</th><th>Evidence</th><th>Blockers</th></tr></thead>";
+      const body = document.createElement("tbody");
+      for (const row of rows) {
+        const tr = document.createElement("tr");
+        for (const value of [row.role.label, row.title, row.stage, statusLabel(row.status), row.evidence, row.blockers]) {
+          const td = document.createElement("td");
+          td.textContent = value;
+          tr.append(td);
+        }
+        body.append(tr);
+      }
+      table.append(body);
+      taskTableWrap.replaceChildren(table);
+    }
+
+    function empty(message) {
+      const div = document.createElement("div");
+      div.className = "empty";
+      div.textContent = message;
+      return div;
+    }
+
+    function selectRole(roleId) {
+      state.selectedRole = roleId;
+      render();
+    }
+
+    function render() {
+      app.classList.toggle("reduced", !state.animationEnabled);
+      renderMeta();
+      renderScene();
+      renderAgentGrid();
+      renderDetail();
+      renderPipeline();
+      renderRoleFilter();
+      renderTaskTable();
+      jsonInput.placeholder = JSON.stringify({
+        schemaVersion: 1,
+        mode: "real",
+        source: "Local status export name",
+        timestamp: new Date().toISOString(),
+        agents: [{ role: "coordinator", stage: "brief", status: "unknown", evidence: "", blockers: "", tasks: [] }]
+      }, null, 2);
+    }
+
+    function loadSnapshotFromText(value) {
+      if (utf8Bytes(value) > limits.jsonBytes) {
+        throw new Error(`Snapshot JSON is too large; maximum is ${limits.jsonBytes} bytes.`);
+      }
+      const raw = JSON.parse(value);
+      const nextSnapshot = validateSnapshot(raw);
+      state.snapshot = nextSnapshot;
+      state.selectedRole = nextSnapshot.agents[0].role;
+      state.statusFilter = "all";
+      state.roleFilter = "all";
+      statusFilter.value = "all";
+      roleFilter.value = "all";
+      render();
+      setFeedback("Snapshot loaded. Imported strings are rendered as text and no external links are activated.", "ok");
+    }
+
+    document.getElementById("loadTextButton").addEventListener("click", () => {
+      try {
+        loadSnapshotFromText(jsonInput.value);
+      } catch (error) {
+        setFeedback(`Could not load snapshot: ${error.message}`, "error");
+      }
+    });
+
+    document.getElementById("fileInput").addEventListener("change", async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      try {
+        if (file.size > limits.jsonBytes) throw new Error(`Snapshot JSON is too large; maximum is ${limits.jsonBytes} bytes.`);
+        const value = await file.text();
+        jsonInput.value = value;
+        loadSnapshotFromText(value);
+      } catch (error) {
+        setFeedback(`Could not import file: ${error.message}`, "error");
+      } finally {
+        event.target.value = "";
+      }
+    });
+
+    document.getElementById("exportButton").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(state.snapshot, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ai-curriculum-office-${state.snapshot.mode}-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.append(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setFeedback("Current snapshot exported as local JSON.", "ok");
+    });
+
+    document.getElementById("copyButton").addEventListener("click", async () => {
+      const value = JSON.stringify(state.snapshot, null, 2);
+      jsonInput.value = value;
+      try {
+        await navigator.clipboard.writeText(value);
+        setFeedback("Current JSON copied to clipboard.", "ok");
+      } catch {
+        setFeedback("Current JSON placed in the text box. Clipboard permission was unavailable.", "ok");
+      }
+    });
+
+    document.getElementById("resetButton").addEventListener("click", () => {
+      if (!confirm("Reset to fictional demo snapshot? Imported snapshot data in this page will be replaced.")) return;
+      state.snapshot = cloneSnapshot(demoSnapshot);
+      state.selectedRole = "coordinator";
+      state.statusFilter = "all";
+      state.roleFilter = "all";
+      statusFilter.value = "all";
+      roleFilter.value = "all";
+      jsonInput.value = "";
+      render();
+      setFeedback("Fictional demo snapshot restored.", "ok");
+    });
+
+    document.getElementById("demoToggle").addEventListener("change", event => {
+      if (event.target.checked) {
+        state.snapshot = cloneSnapshot(demoSnapshot);
+        state.selectedRole = "coordinator";
+        setFeedback("Demo mode uses fictional sample tasks only.", "ok");
+      } else {
+        state.snapshot = validateSnapshot({ schemaVersion: 1, mode: "real", source: "No real source connected", timestamp: new Date().toISOString(), note: "No live integration is connected. Import a validated local JSON snapshot.", agents: roleDefs.map(role => ({ role: role.id, stage: "brief", status: "unknown", evidence: "No local snapshot imported", blockers: "Import required", tasks: [] })) });
+        state.selectedRole = "coordinator";
+        setFeedback("Real snapshot mode is empty until a validated local JSON snapshot is imported.", "ok");
+      }
+      render();
+    });
+
+    document.getElementById("motionToggle").addEventListener("change", event => {
+      state.animationEnabled = event.target.checked;
+      render();
+      setFeedback(state.animationEnabled ? "State animations enabled." : "State animations paused.", "ok");
+    });
+
+    statusFilter.addEventListener("change", event => {
+      state.statusFilter = event.target.value;
+      renderTaskTable();
+    });
+
+    roleFilter.addEventListener("change", event => {
+      state.roleFilter = event.target.value;
+      renderTaskTable();
+    });
+
+    document.addEventListener("keydown", event => {
+      if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+      const target = event.target;
+      if (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
+      const index = roleDefs.findIndex(role => role.id === state.selectedRole);
+      const next = event.key === "ArrowRight" ? (index + 1) % roleDefs.length : (index + roleDefs.length - 1) % roleDefs.length;
+      selectRole(roleDefs[next].id);
+    });
+
+    try {
+      state.snapshot = validateSnapshot(demoSnapshot);
+      render();
+      setFeedback("Ready. Demo data is fictional; import JSON for a real dated snapshot.", "ok");
+    } catch (error) {
+      document.body.textContent = `Artifact initialization failed: ${error.message}`;
+    }
+  </script>
+</body>
+</html>
